@@ -22,3 +22,13 @@ add_executable(test_matmul tests/test_matmul.cpp)
 target_link_libraries(test_matmul PRIVATE matmul GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(test_matmul)
+
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(benchmark
+  URL https://github.com/google/benchmark/archive/refs/tags/v1.9.1.zip
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+FetchContent_MakeAvailable(benchmark)
+
+add_executable(bench_matmul bench/bench_matmul.cpp)
+target_link_libraries(bench_matmul PRIVATE matmul benchmark::benchmark_main)
