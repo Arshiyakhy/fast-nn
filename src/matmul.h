@@ -4,3 +4,6 @@
 // and writes the result into C (m rows, n columns).
 // All three grids are flat lists of floats, stored row by row.
 void matmul_naive(const float* A, const float* B, float* C, int m, int k, int n);
+
+// Same math as matmul_naive, but with the loops in a cache friendly order.
+void matmul_loop_order(const float* A, const float* B, float* C, int m, int k, int n);

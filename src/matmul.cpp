@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "matmul.h"
 
 void matmul_naive(const float* A, const float* B, float* C, int m, int k, int n) {
@@ -8,6 +9,18 @@ void matmul_naive(const float* A, const float* B, float* C, int m, int k, int n)
                 sum += A[i * k + p] * B[p * n + j];
             }
             C[i * n + j] = sum;
+        }
+    }
+}
+
+void matmul_loop_order(const float* A, const float* B, float* C, int m, int k, int n) {
+    std::fill(C, C + m * n, 0.0f);
+    for (int i = 0; i < m; i++) {
+        for (int p = 0; p < k; p++) {
+            const float a = A[i * k + p];
+            for (int j = 0; j < n; j++) {
+                C[i * n + j] += a * B[p * n + j];
+            }
         }
     }
 }
