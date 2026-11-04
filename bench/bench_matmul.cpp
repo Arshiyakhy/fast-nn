@@ -38,3 +38,25 @@ static void BM_MatmulLoopOrder(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * 2LL * n * n * n);
 }
 BENCHMARK(BM_MatmulLoopOrder)->Arg(256)->Arg(512)->Arg(1024)->Unit(benchmark::kMillisecond);
+
+static void BM_MatmulTiled(benchmark::State& state) {
+    const int n = static_cast<int>(state.range(0));
+    const int block = static_cast<int>(state.range(1));
+    std::vector<float> A(n * n), B(n * n), C(n * n);
+
+    std::mt19937 gen(42);
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    for (auto& x : A) x = dist(gen);
+    for (auto& x : B) x = dist(gen);
+
+    for (auto _ : state) {
+        matmul_tiled(A.data(), B.data(), C.data(), n, n, n, block);
+        benchmark::DoNotOptimize(C.data());
+        benchmark::ClobberMemory();
+    }
+    state.SetItemsProcessed(state.iterations() * 2LL * n * n * n);
+}
+BENCHMARK(BM_MatmulTiled)
+    ->Args({256, 32})->Args({512, 32})->Args({1024, 32})
+    ->Args({1024, 8})->Args({1024, 16})->Args({1024, 64})->Args({1024, 128})
+    ->Unit(benchmark::kMillisecond);

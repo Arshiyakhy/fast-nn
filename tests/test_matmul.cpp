@@ -74,3 +74,25 @@ TEST(MatmulLoopOrder, MatchesNaiveOnManyShapes) {
     check_matches_naive(64, 64, 64);
     check_matches_naive(100, 1, 7);
 }
+
+static void check_tiled_matches_naive(int m, int k, int n, int block) {
+    std::mt19937 gen(321);
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    std::vector<float> A(m * k), B(k * n), expected(m * n), actual(m * n, 99.0f);
+    for (auto& x : A) x = dist(gen);
+    for (auto& x : B) x = dist(gen);
+    matmul_naive(A.data(), B.data(), expected.data(), m, k, n);
+    matmul_tiled(A.data(), B.data(), actual.data(), m, k, n, block);
+    for (int x = 0; x < m * n; x++) {
+        EXPECT_NEAR(actual[x], expected[x], 1e-4f);
+    }
+}
+
+TEST(MatmulTiled, MatchesNaiveOnManyShapesAndBlocks) {
+    check_tiled_matches_naive(2, 2, 2, 4);
+    check_tiled_matches_naive(2, 3, 2, 1);
+    check_tiled_matches_naive(37, 53, 29, 8);
+    check_tiled_matches_naive(64, 64, 64, 16);
+    check_tiled_matches_naive(100, 1, 7, 32);
+    check_tiled_matches_naive(70, 70, 70, 32);
+}
