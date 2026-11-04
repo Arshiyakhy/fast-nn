@@ -7,7 +7,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-add_library(matmul src/matmul.cpp)
+add_library(matmul src/matmul.cpp src/matmul_avx2.cpp)
+set_source_files_properties(src/matmul_avx2.cpp PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
 target_include_directories(matmul PUBLIC src)
 target_compile_options(matmul PRIVATE -Wall -Wextra)
 

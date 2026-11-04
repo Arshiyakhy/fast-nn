@@ -96,3 +96,26 @@ TEST(MatmulTiled, MatchesNaiveOnManyShapesAndBlocks) {
     check_tiled_matches_naive(100, 1, 7, 32);
     check_tiled_matches_naive(70, 70, 70, 32);
 }
+
+static void check_avx2_matches_naive(int m, int k, int n) {
+    std::mt19937 gen(555);
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    std::vector<float> A(m * k), B(k * n), expected(m * n), actual(m * n, 99.0f);
+    for (auto& x : A) x = dist(gen);
+    for (auto& x : B) x = dist(gen);
+    matmul_naive(A.data(), B.data(), expected.data(), m, k, n);
+    matmul_avx2(A.data(), B.data(), actual.data(), m, k, n);
+    for (int x = 0; x < m * n; x++) {
+        EXPECT_NEAR(actual[x], expected[x], 1e-4f);
+    }
+}
+
+TEST(MatmulAvx2, MatchesNaiveOnManyShapes) {
+    check_avx2_matches_naive(2, 2, 2);
+    check_avx2_matches_naive(2, 3, 2);
+    check_avx2_matches_naive(3, 3, 17);
+    check_avx2_matches_naive(5, 9, 8);
+    check_avx2_matches_naive(37, 53, 29);
+    check_avx2_matches_naive(64, 64, 64);
+    check_avx2_matches_naive(100, 1, 7);
+}
