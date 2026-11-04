@@ -78,3 +78,25 @@ static void BM_MatmulAvx2(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * 2LL * n * n * n);
 }
 BENCHMARK(BM_MatmulAvx2)->Arg(256)->Arg(512)->Arg(1024)->Unit(benchmark::kMillisecond);
+
+static void BM_MatmulThreads(benchmark::State& state) {
+    const int n = static_cast<int>(state.range(0));
+    const int threads = static_cast<int>(state.range(1));
+    std::vector<float> A(n * n), B(n * n), C(n * n);
+
+    std::mt19937 gen(42);
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    for (auto& x : A) x = dist(gen);
+    for (auto& x : B) x = dist(gen);
+
+    for (auto _ : state) {
+        matmul_threads(A.data(), B.data(), C.data(), n, n, n, threads);
+        benchmark::DoNotOptimize(C.data());
+        benchmark::ClobberMemory();
+    }
+    state.SetItemsProcessed(state.iterations() * 2LL * n * n * n);
+}
+BENCHMARK(BM_MatmulThreads)
+    ->Args({1024, 1})->Args({1024, 2})->Args({1024, 4})->Args({1024, 6})->Args({1024, 8})
+    ->Args({512, 8})->Args({256, 8})
+    ->UseRealTime()->Unit(benchmark::kMillisecond);

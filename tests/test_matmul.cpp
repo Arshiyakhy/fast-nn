@@ -119,3 +119,26 @@ TEST(MatmulAvx2, MatchesNaiveOnManyShapes) {
     check_avx2_matches_naive(64, 64, 64);
     check_avx2_matches_naive(100, 1, 7);
 }
+
+static void check_threads_matches_naive(int m, int k, int n, int threads) {
+    std::mt19937 gen(777);
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    std::vector<float> A(m * k), B(k * n), expected(m * n), actual(m * n, 99.0f);
+    for (auto& x : A) x = dist(gen);
+    for (auto& x : B) x = dist(gen);
+    matmul_naive(A.data(), B.data(), expected.data(), m, k, n);
+    matmul_threads(A.data(), B.data(), actual.data(), m, k, n, threads);
+    for (int x = 0; x < m * n; x++) {
+        EXPECT_NEAR(actual[x], expected[x], 1e-4f);
+    }
+}
+
+TEST(MatmulThreads, MatchesNaiveOnManyShapesAndThreadCounts) {
+    check_threads_matches_naive(2, 2, 2, 8);
+    check_threads_matches_naive(5, 9, 8, 5);
+    check_threads_matches_naive(10, 7, 3, 4);
+    check_threads_matches_naive(37, 53, 29, 3);
+    check_threads_matches_naive(64, 64, 64, 8);
+    check_threads_matches_naive(100, 1, 7, 4);
+    check_threads_matches_naive(70, 70, 70, 1);
+}

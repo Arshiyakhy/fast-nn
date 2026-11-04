@@ -7,7 +7,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-add_library(matmul src/matmul.cpp src/matmul_avx2.cpp)
+add_library(matmul src/matmul.cpp src/matmul_avx2.cpp src/matmul_threads.cpp)
 set_source_files_properties(src/matmul_avx2.cpp PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
 target_include_directories(matmul PUBLIC src)
 target_compile_options(matmul PRIVATE -Wall -Wextra)
@@ -33,3 +33,6 @@ FetchContent_MakeAvailable(benchmark)
 
 add_executable(bench_matmul bench/bench_matmul.cpp)
 target_link_libraries(bench_matmul PRIVATE matmul benchmark::benchmark_main)
+
+find_package(Threads REQUIRED)
+target_link_libraries(matmul PUBLIC Threads::Threads)
